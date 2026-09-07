@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- 🚨 specialUse y NO dataSync. En Android 15 los dataSync se cortan a las
+         6 h de cada 24, y en Android 14 no se pueden arrancar desde
+         BOOT_COMPLETED. Esta pantalla vive colgada de la pared todo el dia y
+         tiene que volver sola tras un corte de luz. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
+    <!-- El aviso se dibuja ENCIMA de Loyverse. Es el permiso que ninguna web
+         puede tener, y la razon de que esto sea una app y no una pestana. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- Actualizarse sola. Android no deja instalar en silencio a una app
+         normal (haria falta ser propietario del dispositivo): con esto la app
+         puede descargar el APK y ABRIR el instalador, donde alguien confirma
+         una vez. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!-- Impresora termica por Bluetooth (SPP). En 31+ cambia el permiso. -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="false"
+        android:theme="@style/Tema.Yammbo">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="fullSensor"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize|uiMode">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".AjustesActivity"
+            android:exported="false"
+            android:label="@string/ajustes" />
+
+
+        <service
+            android:name=".ServicioKds"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Pantalla de cocina atenta a comandas entrantes durante todo el servicio" />
+        </service>
+
+        <!-- Entrega el APK descargado al instalador del sistema sin exponer
+             un file:// (prohibido desde Android 7). -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.updates"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/rutas_archivos" />
+        </provider>
+
+        <receiver
+            android:name=".ArranqueReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+</manifest>

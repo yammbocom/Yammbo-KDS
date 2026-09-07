@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Negro fijo, como la pantalla web del KDS: una tablet colgada en cocina
+         se mira de lejos y el blanco a pantalla completa deslumbra de noche. -->
+    <style name="Tema.Yammbo" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+    </style>
+</resources>
