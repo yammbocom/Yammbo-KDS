@@ -42,8 +42,13 @@ android {
         // adelante sin pedir nada moderno.
         minSdk = 24
         targetSdk = 36
+        // Invariante del proyecto: el ULTIMO tramo del nombre ES el
+        // versionCode (1.5 <-> 5). El respaldo del actualizador deduce el
+        // codigo del tag de GitHub (v1.5 -> 5); si se rompe esa
+        // correspondencia, la app compara mal y deja de ver actualizaciones
+        // EN SILENCIO.
         versionCode = 5
-        versionName = "1.4"
+        versionName = "1.5"
     }
 
     if (hayFirma) {
