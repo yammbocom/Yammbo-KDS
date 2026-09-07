@@ -61,7 +61,7 @@ object Aviso {
                 CANAL_PEDIDOS, ctx.getString(R.string.canal_pedidos),
                 NotificationManager.IMPORTANCE_HIGH,
             ).apply {
-                description = "Cuando entra una comanda nueva"
+                description = ctx.getString(R.string.canal_pedidos_desc)
                 setSound(uriAlarma(), atributosAlarma())
                 enableVibration(true)
                 vibrationPattern = longArrayOf(0, 400, 200, 400, 200, 600)
@@ -83,7 +83,7 @@ object Aviso {
     fun notificacionServicio(ctx: Context): Notification =
         NotificationCompat.Builder(ctx, CANAL_SERVICIO)
             .setContentTitle("Yammbo KDS")
-            .setContentText("Atento a los pedidos")
+            .setContentText(ctx.getString(R.string.canal_servicio_desc))
             .setSmallIcon(R.drawable.ic_noti)
             .setOngoing(true)
             .setContentIntent(abrirApp(ctx))
@@ -205,7 +205,7 @@ object Aviso {
                         cornerRadius = 34f
                     }
                     setPadding(64, 52, 64, 48)
-                    addView(linea("PEDIDO EN LÍNEA", 12f, Color.parseColor("#9E9E9E"), 0).apply {
+                    addView(linea(ctx.getString(R.string.cartel_encabezado), 12f, Color.parseColor("#9E9E9E"), 0).apply {
                         letterSpacing = 0.18f
                     })
                     addView(linea(titulo, 27f, Color.WHITE, 10, negrita = true))
@@ -230,7 +230,7 @@ object Aviso {
                             )
                         }
                     }
-                    addView(linea("Toca aquí para abrir la cocina", 13f, Color.parseColor("#9E9E9E"), 28))
+                    addView(linea(ctx.getString(R.string.cartel_abrir), 13f, Color.parseColor("#9E9E9E"), 28))
                 }
 
                 // Marco a pantalla completa: tocar FUERA de la tarjeta lo cierra

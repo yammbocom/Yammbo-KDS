@@ -1,8 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Base en INGLES. Android sirve values-es/ a una tablet en español y esto a
+  cualquier otra: la carpeta sin sufijo es el respaldo para los idiomas que no
+  se han traducido.
+
+  La pantalla web que va dentro tambien es bilingue y se decide con la cabecera
+  Accept-Language, que sale de la misma configuracion del dispositivo: asi la
+  app y su contenido nunca hablan idiomas distintos.
+-->
 <resources>
     <string name="app_name">Yammbo KDS</string>
-    <string name="ajustes">Ajustes</string>
-    <string name="ajustes_app">Yammbo KDS · Ajustes</string>
-    <string name="canal_pedidos">Pedidos nuevos</string>
-    <string name="canal_servicio">Pantalla activa</string>
+    <string name="ajustes">Settings</string>
+    <string name="ajustes_app">Yammbo KDS · Settings</string>
+    <string name="canal_pedidos">New orders</string>
+    <string name="canal_pedidos_desc">When a new order comes in</string>
+    <string name="canal_servicio">Screen active</string>
+    <string name="canal_servicio_desc">Watching for orders</string>
+
+    <!-- El cartel sobre Loyverse -->
+    <string name="cartel_encabezado">ONLINE ORDER</string>
+    <string name="cartel_abrir">Tap here to open the kitchen</string>
+    <string name="aviso_falta_encima">Turn on \"Display over other apps\" for the alert</string>
+
+    <!-- Ajustes -->
+    <string name="aj_enlace">Kitchen link (panel &gt; Kitchen &gt; Copy)</string>
+    <string name="aj_conexion">How the printer connects</string>
+    <string name="aj_bt">Bluetooth</string>
+    <string name="aj_red">Network / WiFi (IP)</string>
+    <string name="aj_usb">USB (cable)</string>
+    <string name="aj_bt_lista">Bluetooth printer (paired in Android)</string>
+    <string name="aj_bt_sin_permiso">(no Bluetooth permission)</string>
+    <string name="aj_bt_ninguna">(none paired)</string>
+    <string name="aj_ip">Printer IP</string>
+    <string name="aj_puerto">Port (9100 on almost all)</string>
+    <string name="aj_usb_cable">Printer by cable</string>
+    <string name="aj_usb_permiso">Allow the USB</string>
+    <string name="aj_usb_ninguna">No USB printer found. Plug in the OTG cable.</string>
+    <string name="aj_ancho">Paper width</string>
+    <string name="aj_avisos">Alerts</string>
+    <string name="aj_encima_ok">Permission to alert on top: granted</string>
+    <string name="aj_encima_no">Permission to alert on top: MISSING. Without it the alert does
+        not show over Loyverse.</string>
+    <string name="aj_probar_aviso">Test alert (sound and card)</string>
+    <string name="aj_aviso_ok">Alert fired: you should hear it and see the card</string>
+    <string name="aj_aviso_sin_cartel">It rang and notified, but the card permission is missing</string>
+    <string name="aj_probar_impresion">Test print</string>
+    <string name="aj_enviando">Sending a test ticket…</string>
+    <string name="aj_guardar">Save and open the kitchen</string>
+    <string name="aj_enlace_malo">Paste the https kitchen link (panel &gt; Kitchen &gt; Copy)</string>
+
+    <!-- Actualizacion -->
+    <string name="act_buscar">Check for updates</string>
+    <string name="act_comprobando">Checking…</string>
+    <string name="act_sin_comprobar">Could not check. Is there internet?</string>
+    <string name="act_al_dia">You already have the latest (%1$s)</string>
+    <string name="act_nueva">New version %1$s</string>
+    <string name="act_generico">Update now?</string>
+    <string name="act_actualizar">Update</string>
+    <string name="act_ahora_no">Not now</string>
+    <string name="act_descargando">Downloading the update…</string>
+    <string name="act_permiso_instalar">Allow installing apps from this source</string>
+
+    <!-- Errores de la impresora -->
+    <string name="err_sin_usb">This tablet has no USB</string>
+    <string name="err_usb_ninguna">No USB printer connected</string>
+    <string name="err_usb_permiso">USB permission missing: open Settings and try again</string>
+    <string name="err_usb_datos">That USB printer does not accept data</string>
+    <string name="err_usb_abrir">Could not open the USB</string>
+    <string name="err_usb_ocupado">The USB is busy</string>
+    <string name="err_usb_corto">The USB printer cut the connection</string>
+    <string name="err_sin_ip">Printer IP missing</string>
+    <string name="err_sin_impresora">No printer selected</string>
+    <string name="err_sin_bt">This tablet has no Bluetooth</string>
+    <string name="err_bt_apagado">Bluetooth is off</string>
+    <string name="err_descarga_perdida">The download went nowhere</string>
+    <string name="err_descarga_http">The download answered %1$d</string>
+    <string name="err_no_descarga">Could not download: %1$s</string>
+    <string name="err_no_apk">The downloaded file does not look like an APK</string>
+    <string name="err_no_instalador">Could not open the installer: %1$s</string>
+
+    <!-- El ticket impreso. Va a una termica de 32 o 48 columnas: corto y en
+         mayusculas, que es como se lee de un vistazo al arrancar el papel. -->
+    <string name="tk_tpv">POS</string>
+    <string name="tk_web">WEB</string>
+    <string name="tk_envio">· DELIVERY</string>
+    <string name="tk_recoge">· PICKUP</string>
+    <string name="tk_cliente">CUSTOMER</string>
+    <string name="tk_nota">NOTE</string>
+    <string name="tk_articulo">item</string>
+    <string name="tk_articulos">items</string>
 </resources>

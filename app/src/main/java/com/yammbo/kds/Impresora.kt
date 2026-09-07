@@ -95,11 +95,11 @@ object Impresora {
     @Throws(Exception::class)
     private fun enviarUsb(ctx: Context, datos: ByteArray) {
         val um = ctx.getSystemService(Context.USB_SERVICE) as? UsbManager
-            ?: throw SinImpresora("Esta tablet no tiene USB")
+            ?: throw SinImpresora(ctx.getString(R.string.err_sin_usb))
         val dev = usbImpresora(ctx)
-            ?: throw SinImpresora("No veo ninguna impresora USB conectada")
+            ?: throw SinImpresora(ctx.getString(R.string.err_usb_ninguna))
         if (!um.hasPermission(dev))
-            throw SinImpresora("Falta dar permiso al USB: entra en Ajustes y prueba de nuevo")
+            throw SinImpresora(ctx.getString(R.string.err_usb_permiso))
 
         var iface = dev.getInterface(0)
         for (i in 0 until dev.interfaceCount) {
@@ -113,18 +113,18 @@ object Impresora {
                 ep.type == UsbConstants.USB_ENDPOINT_XFER_BULK
             ) { salida = e; break }
         }
-        if (salida < 0) throw SinImpresora("Esa impresora USB no acepta datos")
+        if (salida < 0) throw SinImpresora(ctx.getString(R.string.err_usb_datos))
 
-        val con = um.openDevice(dev) ?: throw SinImpresora("No se pudo abrir el USB")
+        val con = um.openDevice(dev) ?: throw SinImpresora(ctx.getString(R.string.err_usb_abrir))
         try {
-            if (!con.claimInterface(iface, true)) throw SinImpresora("El USB esta ocupado")
+            if (!con.claimInterface(iface, true)) throw SinImpresora(ctx.getString(R.string.err_usb_ocupado))
             val ep = iface.getEndpoint(salida)
             var i = 0
             while (i < datos.size) {
                 val n = minOf(1024, datos.size - i)
                 val trozo = datos.copyOfRange(i, i + n)
                 if (con.bulkTransfer(ep, trozo, trozo.size, 5000) < 0)
-                    throw SinImpresora("La impresora USB corto la comunicacion")
+                    throw SinImpresora(ctx.getString(R.string.err_usb_corto))
                 i += n
             }
         } finally {
@@ -136,8 +136,8 @@ object Impresora {
     // ---- Red ---------------------------------------------------------------
 
     @Throws(Exception::class)
-    private fun enviarRed(ip: String, puerto: Int, datos: ByteArray) {
-        if (ip.isBlank()) throw SinImpresora("Falta la IP de la impresora")
+    private fun enviarRed(ctx: Context, ip: String, puerto: Int, datos: ByteArray) {
+        if (ip.isBlank()) throw SinImpresora(ctx.getString(R.string.err_sin_ip))
         val s = Socket()
         try {
             s.connect(InetSocketAddress(ip, puerto), 6000)
@@ -161,11 +161,11 @@ object Impresora {
      */
     @SuppressLint("MissingPermission")
     @Throws(Exception::class)
-    private fun enviarBt(mac: String, datos: ByteArray) {
-        if (mac.isBlank()) throw SinImpresora("No hay impresora elegida")
+    private fun enviarBt(ctx: Context, mac: String, datos: ByteArray) {
+        if (mac.isBlank()) throw SinImpresora(ctx.getString(R.string.err_sin_impresora))
         val ad = BluetoothAdapter.getDefaultAdapter()
-            ?: throw SinImpresora("Esta tablet no tiene Bluetooth")
-        if (!ad.isEnabled) throw SinImpresora("El Bluetooth esta apagado")
+            ?: throw SinImpresora(ctx.getString(R.string.err_sin_bt))
+        if (!ad.isEnabled) throw SinImpresora(ctx.getString(R.string.err_bt_apagado))
 
         val dev = ad.getRemoteDevice(mac)
         var sock: BluetoothSocket? = null
@@ -197,9 +197,9 @@ object Impresora {
     @Throws(Exception::class)
     fun enviar(ctx: Context, prefs: Prefs, datos: ByteArray) {
         when (prefs.conexion) {
-            "red" -> enviarRed(prefs.ip, prefs.puerto, datos)
+            "red" -> enviarRed(ctx, prefs.ip, prefs.puerto, datos)
             "usb" -> enviarUsb(ctx, datos)
-            else -> enviarBt(prefs.impresora, datos)
+            else -> enviarBt(ctx, prefs.impresora, datos)
         }
         Log.i(TAG, "ticket enviado por " + prefs.conexion)
     }
@@ -210,7 +210,7 @@ object Impresora {
         cola.execute {
             val prefs = Prefs(app)
             val r = runCatching {
-                val datos = EscPos.render(Ticket.de(json), prefs.ancho)
+                val datos = EscPos.render(Ticket.de(json), prefs.ancho, TextosTicket.de(ctx))
                 try {
                     enviar(app, prefs, datos)
                 } catch (e: Exception) {

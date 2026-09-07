@@ -68,8 +68,7 @@ class AjustesActivity : AppCompatActivity() {
 
     private fun refrescarPermisoEncima() {
         val ok = Aviso.puedeDibujarEncima(this)
-        estadoEncima?.text = if (ok) "Permiso para avisar encima: concedido"
-            else "Permiso para avisar encima: FALTA. Sin el, el aviso no salta sobre Loyverse."
+        estadoEncima?.text = getString(if (ok) R.string.aj_encima_ok else R.string.aj_encima_no)
         estadoEncima?.setTextColor(if (ok) Color.parseColor("#9E9E9E") else Color.WHITE)
         botonPermiso?.visibility = if (ok) View.GONE else View.VISIBLE
     }
@@ -93,7 +92,7 @@ class AjustesActivity : AppCompatActivity() {
             setSingleLine(true)
         }
 
-        val tipos = listOf("Bluetooth", "Red / WiFi (IP)", "USB (cable)")
+        val tipos = listOf(getString(R.string.aj_bt), getString(R.string.aj_red), getString(R.string.aj_usb))
         val claves = listOf("bt", "red", "usb")
         val spTipo = Spinner(this).apply {
             adapter = ArrayAdapter(
@@ -103,7 +102,7 @@ class AjustesActivity : AppCompatActivity() {
 
         // Un fallo de permiso y "no hay ninguna emparejada" son problemas
         // distintos y se dicen distinto.
-        val sinLista = if (!puedeVer) "(sin permiso de Bluetooth)" else "(ninguna emparejada)"
+        val sinLista = getString(if (!puedeVer) R.string.aj_bt_sin_permiso else R.string.aj_bt_ninguna)
         val spImpresora = Spinner(this).apply {
             adapter = ArrayAdapter(
                 this@AjustesActivity, android.R.layout.simple_spinner_dropdown_item,
@@ -128,12 +127,12 @@ class AjustesActivity : AppCompatActivity() {
             setSingleLine(true)
         }
         val bUsb = Button(this).apply {
-            text = "Dar permiso al USB"
+            text = getString(R.string.aj_usb_permiso)
             setOnClickListener {
                 if (Impresora.usbImpresora(this@AjustesActivity) == null) {
                     Toast.makeText(
                         this@AjustesActivity,
-                        "No veo ninguna impresora USB. Conecta el cable OTG.",
+                        getString(R.string.aj_usb_ninguna),
                         Toast.LENGTH_LONG,
                     ).show()
                 } else Impresora.usbPedirPermiso(this@AjustesActivity)
@@ -141,8 +140,8 @@ class AjustesActivity : AppCompatActivity() {
         }
 
         // Etiquetas que se enseñan u ocultan con el tipo de conexion.
-        val lbBt = etiqueta("Impresora Bluetooth (emparejada en Android)")
-        val lbIp = etiqueta("IP de la impresora")
+        val lbBt = etiqueta(getString(R.string.aj_bt_lista))
+        val lbIp = etiqueta(getString(R.string.aj_ip))
         val lbPuerto = etiqueta("Puerto (9100 en casi todas)")
         val lbUsb = etiqueta("Impresora por cable")
 
@@ -217,21 +216,20 @@ class AjustesActivity : AppCompatActivity() {
         botonPermiso = bPermiso
 
         val bProbarAviso = Button(this).apply {
-            text = "Probar aviso (sonido y cartel)"
+            text = getString(R.string.aj_probar_aviso)
             setOnClickListener {
                 guardar()
                 val cartel = Aviso.probar(this@AjustesActivity)
                 Toast.makeText(
                     this@AjustesActivity,
-                    if (cartel) "Aviso lanzado: deberias oirlo y ver el cartel"
-                    else "Sono y notifico, pero falta el permiso para el cartel",
+                    getString(if (cartel) R.string.aj_aviso_ok else R.string.aj_aviso_sin_cartel),
                     Toast.LENGTH_LONG,
                 ).show()
             }
         }
 
         val bProbar = Button(this).apply {
-            text = "Probar impresion"
+            text = getString(R.string.aj_probar_impresion)
             setOnClickListener {
                 guardar()
                 Impresora.encolar(this@AjustesActivity, ejemploJson()) { msg ->
@@ -239,24 +237,24 @@ class AjustesActivity : AppCompatActivity() {
                         Toast.makeText(this@AjustesActivity, msg, Toast.LENGTH_LONG).show()
                     }
                 }
-                Toast.makeText(this@AjustesActivity, "Enviando ticket de prueba...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@AjustesActivity, R.string.aj_enviando, Toast.LENGTH_SHORT).show()
             }
         }
 
         val bActualizar = Button(this).apply {
-            text = "Buscar actualización"
+            text = getString(R.string.act_buscar)
             setOnClickListener {
-                Toast.makeText(this@AjustesActivity, "Comprobando...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@AjustesActivity, R.string.act_comprobando, Toast.LENGTH_SHORT).show()
                 Thread {
                     val v = Actualizador.ultima()
                     runOnUiThread {
                         when {
                             v == null -> Toast.makeText(
                                 this@AjustesActivity,
-                                "No se pudo comprobar. ¿Hay internet?", Toast.LENGTH_LONG).show()
+                                R.string.act_sin_comprobar, Toast.LENGTH_LONG).show()
                             !Actualizador.hayNueva(this@AjustesActivity, v) -> Toast.makeText(
                                 this@AjustesActivity,
-                                "Ya tienes la última (" + Actualizador.nombreInstalado(this@AjustesActivity) + ")",
+                                getString(R.string.act_al_dia, Actualizador.nombreInstalado(this@AjustesActivity)),
                                 Toast.LENGTH_LONG).show()
                             else -> {
                                 // La descarga y el dialogo viven en MainActivity;
@@ -273,13 +271,13 @@ class AjustesActivity : AppCompatActivity() {
         }
 
         val bGuardar = Button(this).apply {
-            text = "Guardar y abrir la cocina"
+            text = getString(R.string.aj_guardar)
             setOnClickListener {
                 guardar()
                 if (!prefs.configurada) {
                     Toast.makeText(
                         this@AjustesActivity,
-                        "Pega el enlace https de cocina (panel > Cocina > Copiar)",
+                        getString(R.string.aj_enlace_malo),
                         Toast.LENGTH_LONG,
                     ).show()
                     return@setOnClickListener
@@ -295,22 +293,22 @@ class AjustesActivity : AppCompatActivity() {
             setPadding(48, 24, 48, 56)
             setBackgroundColor(Color.BLACK)
             addView(TextView(this@AjustesActivity).apply {
-                text = "Yammbo KDS"
+                text = getString(R.string.app_name)
                 setTextColor(Color.WHITE)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f)
                 typeface = android.graphics.Typeface.DEFAULT_BOLD
             })
-            addView(etiqueta("Enlace de cocina (panel > Cocina > Copiar)"))
+            addView(etiqueta(getString(R.string.aj_enlace)))
             addView(url)
-            addView(etiqueta("Como se conecta la impresora"))
+            addView(etiqueta(getString(R.string.aj_conexion)))
             addView(spTipo)
             addView(lbBt); addView(spImpresora)
             addView(lbIp); addView(ip)
             addView(lbPuerto); addView(puerto)
             addView(lbUsb); addView(bUsb)
-            addView(etiqueta("Ancho de papel"))
+            addView(etiqueta(getString(R.string.aj_ancho)))
             addView(spAncho)
-            addView(etiqueta("Avisos"))
+            addView(etiqueta(getString(R.string.aj_avisos)))
             addView(cbSonido)
             addView(cbEncima)
             addView(txtEncima)

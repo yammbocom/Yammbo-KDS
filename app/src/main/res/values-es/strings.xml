@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Español. Android sirve esto a una tablet en español y values/ (en inglés) a
+     cualquier otra. -->
+<resources>
+    <string name="ajustes">Ajustes</string>
+    <string name="ajustes_app">Yammbo KDS · Ajustes</string>
+    <string name="canal_pedidos">Pedidos nuevos</string>
+    <string name="canal_pedidos_desc">Cuando entra una comanda nueva</string>
+    <string name="canal_servicio">Pantalla activa</string>
+    <string name="canal_servicio_desc">Atento a los pedidos</string>
+
+    <string name="cartel_encabezado">PEDIDO EN LÍNEA</string>
+    <string name="cartel_abrir">Toca aquí para abrir la cocina</string>
+    <string name="aviso_falta_encima">Activa «Mostrar sobre otras apps» para el aviso</string>
+
+    <string name="aj_enlace">Enlace de cocina (panel &gt; Cocina &gt; Copiar)</string>
+    <string name="aj_conexion">Cómo se conecta la impresora</string>
+    <string name="aj_bt">Bluetooth</string>
+    <string name="aj_red">Red / WiFi (IP)</string>
+    <string name="aj_usb">USB (cable)</string>
+    <string name="aj_bt_lista">Impresora Bluetooth (emparejada en Android)</string>
+    <string name="aj_bt_sin_permiso">(sin permiso de Bluetooth)</string>
+    <string name="aj_bt_ninguna">(ninguna emparejada)</string>
+    <string name="aj_ip">IP de la impresora</string>
+    <string name="aj_puerto">Puerto (9100 en casi todas)</string>
+    <string name="aj_usb_cable">Impresora por cable</string>
+    <string name="aj_usb_permiso">Dar permiso al USB</string>
+    <string name="aj_usb_ninguna">No veo ninguna impresora USB. Conecta el cable OTG.</string>
+    <string name="aj_ancho">Ancho de papel</string>
+    <string name="aj_avisos">Avisos</string>
+    <string name="aj_encima_ok">Permiso para avisar encima: concedido</string>
+    <string name="aj_encima_no">Permiso para avisar encima: FALTA. Sin él, el aviso no salta
+        sobre Loyverse.</string>
+    <string name="aj_probar_aviso">Probar aviso (sonido y cartel)</string>
+    <string name="aj_aviso_ok">Aviso lanzado: deberías oírlo y ver el cartel</string>
+    <string name="aj_aviso_sin_cartel">Sonó y notificó, pero falta el permiso para el cartel</string>
+    <string name="aj_probar_impresion">Probar impresión</string>
+    <string name="aj_enviando">Enviando ticket de prueba…</string>
+    <string name="aj_guardar">Guardar y abrir la cocina</string>
+    <string name="aj_enlace_malo">Pega el enlace https de cocina (panel &gt; Cocina &gt; Copiar)</string>
+
+    <string name="act_buscar">Buscar actualización</string>
+    <string name="act_comprobando">Comprobando…</string>
+    <string name="act_sin_comprobar">No se pudo comprobar. ¿Hay internet?</string>
+    <string name="act_al_dia">Ya tienes la última (%1$s)</string>
+    <string name="act_nueva">Nueva versión %1$s</string>
+    <string name="act_generico">¿Actualizar ahora?</string>
+    <string name="act_actualizar">Actualizar</string>
+    <string name="act_ahora_no">Ahora no</string>
+    <string name="act_descargando">Descargando la actualización…</string>
+    <string name="act_permiso_instalar">Permite instalar apps de esta fuente</string>
+
+    <string name="err_sin_usb">Esta tablet no tiene USB</string>
+    <string name="err_usb_ninguna">No veo ninguna impresora USB conectada</string>
+    <string name="err_usb_permiso">Falta dar permiso al USB: entra en Ajustes y prueba de nuevo</string>
+    <string name="err_usb_datos">Esa impresora USB no acepta datos</string>
+    <string name="err_usb_abrir">No se pudo abrir el USB</string>
+    <string name="err_usb_ocupado">El USB está ocupado</string>
+    <string name="err_usb_corto">La impresora USB cortó la comunicación</string>
+    <string name="err_sin_ip">Falta la IP de la impresora</string>
+    <string name="err_sin_impresora">No hay impresora elegida</string>
+    <string name="err_sin_bt">Esta tablet no tiene Bluetooth</string>
+    <string name="err_bt_apagado">El Bluetooth está apagado</string>
+    <string name="err_descarga_perdida">La descarga no llegó a ninguna parte</string>
+    <string name="err_descarga_http">La descarga respondió %1$d</string>
+    <string name="err_no_descarga">No se pudo descargar: %1$s</string>
+    <string name="err_no_apk">El archivo descargado no parece un APK</string>
+    <string name="err_no_instalador">No se pudo abrir el instalador: %1$s</string>
+
+    <string name="tk_tpv">TPV</string>
+    <string name="tk_web">WEB</string>
+    <string name="tk_envio">· ENVIO</string>
+    <string name="tk_recoge">· RECOGE</string>
+    <string name="tk_cliente">CLIENTE</string>
+    <string name="tk_nota">NOTA</string>
+    <string name="tk_articulo">articulo</string>
+    <string name="tk_articulos">articulos</string>
+</resources>

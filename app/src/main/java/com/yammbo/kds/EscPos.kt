@@ -112,7 +112,7 @@ object EscPos {
     }
 
     /** @param ancho columnas del papel: 32 en 58 mm, 48 en 80 mm. */
-    fun render(t: Ticket, ancho: Int = 32): ByteArray {
+    fun render(t: Ticket, ancho: Int = 32, tk: TextosTicket = TextosTicket.ES): ByteArray {
         val w = ancho.coerceIn(24, 64)
         val o = ByteArrayOutputStream()
         fun raw(b: ByteArray) = o.write(b)
@@ -135,15 +135,15 @@ object EscPos {
 
         // Metadatos: de donde viene y a que hora entro.
         raw(align(0))
-        val izq = (if (t.origen == "tpv") "TPV" else "WEB") +
+        val izq = (if (t.origen == "tpv") tk.tpv else tk.web) +
             when (t.entrega) {
-                "delivery" -> " " + plegar("· ENVIO")
-                "pickup" -> " " + plegar("· RECOGE")
+                "delivery" -> " " + plegar(tk.envio)
+                "pickup" -> " " + plegar(tk.recoge)
                 else -> ""
             }
         raw(bold(true)); etiquetaValor(izq, horaLocal(t.hora), w).forEach { ln(it) }; raw(bold(false))
 
-        t.cliente?.let { regla('-'); etiquetaValor("CLIENTE", it, w).forEach { s -> ln(s) } }
+        t.cliente?.let { regla('-'); etiquetaValor(tk.cliente, it, w).forEach { s -> ln(s) } }
 
         // Los platos: lo mas grande del papel despues del numero.
         regla('=')
@@ -163,13 +163,13 @@ object EscPos {
         // La nota del pedido: lo unico que no se puede pasar por alto.
         t.nota?.let {
             regla('-')
-            raw(bold(true)); ln("NOTA"); raw(bold(false))
+            raw(bold(true)); ln(tk.nota); raw(bold(false))
             envolver("", it, w, 0).forEach { s -> ln(s) }
         }
 
         regla('-')
         raw(align(1))
-        val arts = t.articulos.toString() + if (t.articulos == 1) " articulo" else " articulos"
+        val arts = t.articulos.toString() + " " + if (t.articulos == 1) tk.articulo else tk.articulos
         ln(arts + "  " + SimpleDateFormat("hh:mm a", Locale.US).format(Date()))
 
         raw(feed(4))   // cola de papel: sin esto el cortador se come el pie

@@ -60,4 +60,34 @@ class EscPosTest {
         t.split(Char(10)).forEach { println("|" + it + "|") }
         t.split(Char(10)).forEach { assertTrue("linea larga: " + it, it.length <= 48) }
     }
+
+    /** El juego de etiquetas en ingles: es mas largo que el castellano. */
+    private val EN = TextosTicket(
+        tpv = "POS", web = "WEB", envio = "· DELIVERY", recoge = "· PICKUP",
+        cliente = "CUSTOMER", nota = "NOTE", articulo = "item", articulos = "items",
+    )
+
+    /**
+     * 🚨 Traducir puede desbordar el papel.
+     *
+     * "· DELIVERY" son tres caracteres mas que "· ENVIO" y "CUSTOMER" uno mas
+     * que "CLIENTE", y en 32 columnas eso es margen de verdad. Una etiqueta que
+     * se pasa no rompe nada: parte la linea en la termica y el ticket sale feo
+     * en la cocina de otro, donde nadie de aqui lo va a ver nunca.
+     */
+    @Test fun papel58mmEnIngles() {
+        val t = comoTexto(EscPos.render(ticket(), 32, EN))
+        println("===== 58 mm (32 col) · EN =====")
+        t.split(Char(10)).forEach { println("|" + it + "|") }
+        t.split(Char(10)).forEach { assertTrue("linea larga: " + it, it.length <= 32) }
+        // Y que de verdad esté imprimiendo las etiquetas que se le pasan.
+        assertTrue("no salió CUSTOMER", t.contains("CUSTOMER"))
+        assertTrue("no salió DELIVERY", t.contains("DELIVERY"))
+        assertTrue("sigue en castellano", !t.contains("CLIENTE"))
+    }
+
+    @Test fun papel80mmEnIngles() {
+        val t = comoTexto(EscPos.render(ticket(), 48, EN))
+        t.split(Char(10)).forEach { assertTrue("linea larga: " + it, it.length <= 48) }
+    }
 }

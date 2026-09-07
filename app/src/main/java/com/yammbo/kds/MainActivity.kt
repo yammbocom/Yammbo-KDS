@@ -147,7 +147,7 @@ class MainActivity : AppCompatActivity() {
         setBackgroundColor(Color.parseColor("#141414"))
         setPadding(20, 6, 20, 6)
         addView(TextView(this@MainActivity).apply {
-            text = "Ajustes"
+            text = getString(R.string.ajustes)
             setTextColor(Color.parseColor("#BDBDBD"))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
             setPadding(30, 14, 30, 14)
@@ -174,10 +174,10 @@ class MainActivity : AppCompatActivity() {
     private fun ofrecer(v: Actualizador.Version) {
         if (isFinishing || isDestroyed) return
         AlertDialog.Builder(this)
-            .setTitle("Nueva versión " + v.name)
-            .setMessage(if (v.notas.isBlank()) "¿Actualizar ahora?" else v.notas.take(700))
-            .setPositiveButton("Actualizar") { _, _ -> instalar(v) }
-            .setNegativeButton("Ahora no", null)
+            .setTitle(getString(R.string.act_nueva, v.name))
+            .setMessage(if (v.notas.isBlank()) getString(R.string.act_generico) else v.notas.take(700))
+            .setPositiveButton(R.string.act_actualizar) { _, _ -> instalar(v) }
+            .setNegativeButton(R.string.act_ahora_no, null)
             .show()
     }
 
@@ -192,7 +192,7 @@ class MainActivity : AppCompatActivity() {
             Actualizador.pedirPermisoInstalar(this)
             return
         }
-        Toast.makeText(this, "Descargando la actualización...", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, R.string.act_descargando, Toast.LENGTH_LONG).show()
         Thread {
             val err = Actualizador.descargarEInstalar(this, v)
             if (err != null) runOnUiThread {
@@ -220,7 +220,7 @@ class MainActivity : AppCompatActivity() {
         // El de dibujar encima no se concede desde un dialogo: hay que mandar
         // al usuario a Ajustes de Android. Se pide una vez y no se insiste.
         if (prefs.encima && !Aviso.puedeDibujarEncima(this)) {
-            Toast.makeText(this, "Activa Mostrar sobre otras apps para el aviso", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, R.string.aviso_falta_encima, Toast.LENGTH_LONG).show()
             runCatching {
                 startActivity(
                     Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + packageName))

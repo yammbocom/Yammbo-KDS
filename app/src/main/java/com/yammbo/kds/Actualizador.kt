@@ -134,11 +134,11 @@ object Actualizador {
                 if (code in 301..308 && saltos++ < 5) {
                     val siguiente = con.getHeaderField("Location")
                     con.disconnect()
-                    if (siguiente.isNullOrBlank()) return "La descarga no llegó a ninguna parte"
+                    if (siguiente.isNullOrBlank()) return ctx.getString(R.string.err_descarga_perdida)
                     url = siguiente
                     continue
                 }
-                if (code != 200) { con.disconnect(); return "La descarga respondió " + code }
+                if (code != 200) { con.disconnect(); return ctx.getString(R.string.err_descarga_http, code) }
                 break
             }
             con.inputStream.use { ent ->
@@ -146,9 +146,9 @@ object Actualizador {
             }
             con.disconnect()
         } catch (e: Exception) {
-            return "No se pudo descargar: " + (e.message ?: "error")
+            return ctx.getString(R.string.err_no_descarga, e.message ?: "?")
         }
-        if (destino.length() < 100_000) return "El archivo descargado no parece un APK"
+        if (destino.length() < 100_000) return ctx.getString(R.string.err_no_apk)
 
         return try {
             val uri = FileProvider.getUriForFile(ctx, ctx.packageName + ".updates", destino)
@@ -161,7 +161,7 @@ object Actualizador {
             )
             null
         } catch (e: Exception) {
-            "No se pudo abrir el instalador: " + (e.message ?: "error")
+            ctx.getString(R.string.err_no_instalador, e.message ?: "?")
         }
     }
 
