@@ -20,6 +20,7 @@
     <!-- El cartel sobre Loyverse -->
     <string name="cartel_encabezado">ONLINE ORDER</string>
     <string name="cartel_abrir">Tap here to open the kitchen</string>
+    <string name="cartel_mas">and %1$d more</string>
     <string name="aviso_falta_encima">Turn on \"Display over other apps\" for the alert</string>
 
     <!-- Ajustes -->

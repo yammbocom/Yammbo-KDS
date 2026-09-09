@@ -100,26 +100,25 @@ object Vigia {
             // Si falta el permiso de dibujar encima, el cartel no sale. Antes
             // se callaba y parecia que el aviso "no funcionaba"; ahora queda en
             // el log y Ajustes lo enseña en claro.
-            if (!Aviso.encima(app, titulo, cuerpo, detalle(o))) {
+            if (!Aviso.encima(app, titulo, cuerpo, detalle(app, o))) {
                 android.util.Log.w("YammboKDS", "sin permiso para dibujar encima: no hay cartel")
             }
         }
     }
 
     /**
-     * Los platos del pedido para el cartel. Recortados a [max]: una comanda de
-     * veinte lineas no cabe en pantalla y tampoco hace falta entera para
-     * decidir si corre prisa; lo que sobra se cuenta al final.
+     * Los platos del pedido para el cartel.
+     *
+     * Arma un bloque por plato — el plato, sus extras y su nota — y deja el
+     * recorte a [recortar], que es donde se puede probar.
      */
-    private fun detalle(o: JSONObject, max: Int = 6): List<String> {
+    private fun detalle(ctx: Context, o: JSONObject, maxPlatos: Int = 5): List<String> {
         val ls = o.optJSONArray("lineas") ?: return emptyList()
-        val out = ArrayList<String>()
-        var puestas = 0
+        val bloques = ArrayList<List<String>>(ls.length())
         for (i in 0 until ls.length()) {
-            if (puestas >= max) break
             val l = ls.optJSONObject(i) ?: continue
-            out.add(l.optInt("n", 1).toString() + "  " + l.texto("nombre"))
-            puestas++
+            val bloque = ArrayList<String>(3)
+            bloque.add(l.optInt("n", 1).toString() + "  " + l.texto("nombre"))
             val ex = l.optJSONArray("extras")
             if (ex != null && ex.length() > 0) {
                 val e = ArrayList<String>()
@@ -128,15 +127,66 @@ object Vigia {
                 }
                 // La sangria inicial es la señal de "esto va debajo del plato":
                 // el cartel la usa para pintarlo mas pequeño y en gris.
-                if (e.isNotEmpty()) out.add("   + " + e.joinToString(", "))
+                if (e.isNotEmpty()) bloque.add("   + " + e.joinToString(", "))
             }
-            l.texto("nota").takeIf { it.isNotBlank() }?.let {
-                out.add("   " + "\"" + it + "\"")
-            }
+            l.texto("nota").takeIf { it.isNotBlank() }?.let { bloque.add("   " + "\u201C" + it + "\u201D") }
+            bloques.add(bloque)
         }
-        val restan = ls.length() - puestas
-        if (restan > 0) out.add("   y " + restan + " mas")
-        return out
+        // El total va aparte de los bloques: lo que no sea un objeto se salto
+        // arriba, pero el cuerpo del cartel («4 articulos») si lo cuenta.
+        val (lineas, restan) =
+            recortar(bloques, maxPlatos, Aviso.lineasQueCaben(ctx), ls.length())
+        if (restan <= 0) return lineas
+        return lineas + ("   " + ctx.getString(R.string.cartel_mas, restan))
+    }
+
+    /**
+     * El recorte del cartel, en un solo sitio y aparte del JSON para poder
+     * probarlo.
+     *
+     * Devuelve los renglones que caben y CUANTOS PLATOS quedan fuera. Se corta
+     * por renglones — no por platos — porque es lo que de verdad limita la
+     * pantalla: los extras y la nota ocupan renglon igual que el plato. Un
+     * plato entra entero o no entra, para que nadie lea media comanda.
+     *
+     * 🚨 La excepcion es el PRIMERO: si ni el primero cabe entero — pantalla
+     * baja, en horizontal, con la letra del sistema en grande — entra al menos
+     * su nombre. Un cartel que solo dice «y 4 mas» no le sirve de nada a quien
+     * esta en la caja, que es para quien existe.
+     *
+     * El contador cuenta PLATOS, no renglones, y solo cuenta los que no se
+     * llegaron a poner: si el corte se hiciera tambien mas adelante, mentiria.
+     *
+     * [total] son los platos que traia la comanda, que pueden ser MAS que los
+     * bloques: quien llama salta lo que no sea un objeto. Tienen que entrar en
+     * el contador igual, o el cartel dice «4 articulos» arriba y ensena tres
+     * sin avisar de que falta uno.
+     */
+    internal fun recortar(
+        bloques: List<List<String>>,
+        maxPlatos: Int,
+        maxLineas: Int,
+        total: Int = bloques.size,
+    ): Pair<List<String>, Int> {
+        val out = ArrayList<String>()
+        var i = 0
+        while (i < bloques.size) {
+            val bloque = bloques[i]
+            // Si este no es el ultimo, hay que dejar sitio para el contador.
+            val tope = if (i == bloques.size - 1) maxLineas else maxLineas - 1
+            if (i >= maxPlatos || out.size + bloque.size > tope) {
+                if (out.isEmpty() && i < maxPlatos && bloque.isNotEmpty()) {
+                    // Solo el nombre, sin extras ni nota. Cuenta como puesto:
+                    // el plato ya se ve, y el contador no debe repetirlo.
+                    out.add(bloque[0])
+                    i++
+                }
+                break
+            }
+            out.addAll(bloque)
+            i++
+        }
+        return out to (total - i)
     }
 
     private fun resumen(o: JSONObject): String {

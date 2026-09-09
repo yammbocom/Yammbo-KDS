@@ -12,3 +12,4 @@
 *.keystore
 keystore.properties
 signing.properties
+.kotlin/

@@ -47,8 +47,8 @@ android {
         // codigo del tag de GitHub (v1.5 -> 5); si se rompe esa
         // correspondencia, la app compara mal y deja de ver actualizaciones
         // EN SILENCIO.
-        versionCode = 6
-        versionName = "1.6"
+        versionCode = 7
+        versionName = "1.7"
     }
 
     if (hayFirma) {

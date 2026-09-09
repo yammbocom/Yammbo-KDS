@@ -16,6 +16,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
+import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -166,8 +167,55 @@ object Aviso {
 
     private var cartel: View? = null
 
+    /** dp a px. Los tamaños en crudo salian minusculos en una tablet densa y
+     *  enormes en una barata: el cartel tiene que medir lo mismo en las dos. */
+    private fun dp(ctx: Context, v: Float): Int =
+        (v * ctx.resources.displayMetrics.density + 0.5f).toInt()
+
     /**
-     * El cartel encima de todo. Se quita solo a los 12 s o al tocarlo: dejarlo
+     * Ancho de la tarjeta. ACOTADO, nunca a pantalla completa.
+     *
+     * 🚨 Con MATCH_PARENT, en una tablet en horizontal salia un cartel de borde
+     * a borde con el texto pegado a la izquierda y un palmo de negro vacio a la
+     * derecha: imposible de leer de un vistazo desde la caja, que es justo para
+     * lo que existe. Se acota tambien contra el ancho real para que en un movil
+     * no quede pegado a los bordes.
+     */
+    private fun anchoTarjeta(ctx: Context): Int {
+        val dm = ctx.resources.displayMetrics
+        return minOf(dp(ctx, 340f), dm.widthPixels - dp(ctx, 48f))
+            .coerceAtLeast(dp(ctx, 220f))
+    }
+
+    /**
+     * sp a px. El texto crece con el tamaño de letra del SISTEMA, que en una
+     * tablet de mostrador suele estar en grande: medir en dp los renglones que
+     * se pintan en sp da una cuenta corta y la tarjeta se sale.
+     */
+    private fun sp(ctx: Context, v: Float): Int = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_SP, v, ctx.resources.displayMetrics).toInt()
+
+    /**
+     * Cuantos renglones de platos caben sin que la tarjeta se salga.
+     *
+     * 🚨 Si se sale, el FrameLayout la recorta por ABAJO y lo que se pierde son
+     * los ultimos platos y el pie ("toca para abrir"), justo lo que no puede
+     * faltar. Por eso se descuenta primero todo lo fijo — encabezado, titulo,
+     * cuerpo de hasta dos lineas, separador, pie y paddings — y solo lo que
+     * sobra se reparte en renglones.
+     *
+     * Lo usa Vigia para recortar la comanda: el corte se hace una sola vez, en
+     * el sitio donde todavia se sabe cuantos platos quedan fuera.
+     */
+    fun lineasQueCaben(ctx: Context): Int {
+        val alto = ctx.resources.displayMetrics.heightPixels
+        val fijo = sp(ctx, 100f) + dp(ctx, 62f)
+        val renglon = sp(ctx, 16f) + dp(ctx, 6f)
+        return ((alto * 0.88f - fijo) / renglon).toInt().coerceIn(2, 9)
+    }
+
+    /**
+     * El cartel encima de todo. Se quita solo a los 20 s o al tocarlo: dejarlo
      * fijo taparia la caja justo cuando el cajero esta cobrando.
      *
      * Devuelve false si no hay permiso, para que quien llama pueda decirlo en
@@ -186,14 +234,24 @@ object Aviso {
                 quitarCartel(ctx)
                 val wm = ctx.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
-                fun linea(t: String, sp: Float, color: Int, arriba: Int, negrita: Boolean = false) =
-                    TextView(ctx).apply {
-                        text = t
-                        setTextColor(color)
-                        setTextSize(TypedValue.COMPLEX_UNIT_SP, sp)
-                        setPadding(0, arriba, 0, 0)
-                        if (negrita) typeface = android.graphics.Typeface.DEFAULT_BOLD
-                    }
+                fun linea(
+                    t: String,
+                    sp: Float,
+                    color: Int,
+                    arriba: Int,
+                    negrita: Boolean = false,
+                    lineas: Int = 1,
+                ) = TextView(ctx).apply {
+                    text = t
+                    setTextColor(color)
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, sp)
+                    setPadding(0, arriba, 0, 0)
+                    // Con la tarjeta estrecha, un plato de nombre largo la
+                    // estiraria hacia abajo hasta comerse la pantalla.
+                    maxLines = lineas
+                    ellipsize = TextUtils.TruncateAt.END
+                    if (negrita) typeface = android.graphics.Typeface.DEFAULT_BOLD
+                }
 
                 // Tarjeta centrada, no pegada arriba: ahi chocaba con la propia
                 // notificacion emergente y el cartel quedaba medio tapado.
@@ -201,45 +259,53 @@ object Aviso {
                     orientation = LinearLayout.VERTICAL
                     background = GradientDrawable().apply {
                         setColor(Color.BLACK)
-                        setStroke(4, Color.WHITE)
-                        cornerRadius = 34f
+                        setStroke(dp(ctx, 2f), Color.WHITE)
+                        cornerRadius = dp(ctx, 18f).toFloat()
                     }
-                    setPadding(64, 52, 64, 48)
-                    addView(linea(ctx.getString(R.string.cartel_encabezado), 12f, Color.parseColor("#9E9E9E"), 0).apply {
-                        letterSpacing = 0.18f
-                    })
-                    addView(linea(titulo, 27f, Color.WHITE, 10, negrita = true))
-                    addView(linea(cuerpo, 16f, Color.parseColor("#C7C7C7"), 6))
+                    setPadding(dp(ctx, 20f), dp(ctx, 15f), dp(ctx, 20f), dp(ctx, 13f))
+                    addView(
+                        linea(ctx.getString(R.string.cartel_encabezado), 11f,
+                            Color.parseColor("#9E9E9E"), 0).apply { letterSpacing = 0.16f }
+                    )
+                    addView(
+                        linea(titulo, 23f, Color.WHITE, dp(ctx, 2f), negrita = true, lineas = 2)
+                    )
+                    addView(
+                        linea(cuerpo, 14f, Color.parseColor("#C7C7C7"), dp(ctx, 2f), lineas = 2)
+                    )
                     // Lo que se va a cocinar. El cajero decide con esto si le
                     // corre prisa, sin tener que abrir la cocina.
                     if (detalle.isNotEmpty()) {
                         addView(View(ctx).apply {
                             setBackgroundColor(Color.parseColor("#3A3A3A"))
-                            layoutParams = LinearLayout.LayoutParams(-1, 2).apply { topMargin = 24 }
+                            layoutParams = LinearLayout.LayoutParams(-1, dp(ctx, 1f))
+                                .apply { topMargin = dp(ctx, 11f) }
                         })
                         detalle.forEachIndexed { i, d ->
                             val sangrada = d.startsWith(" ")
                             addView(
                                 linea(
                                     d.trim(),
-                                    if (sangrada) 14f else 18f,
+                                    if (sangrada) 13f else 16f,
                                     if (sangrada) Color.parseColor("#9E9E9E") else Color.WHITE,
-                                    if (i == 0) 22 else if (sangrada) 2 else 12,
+                                    dp(ctx, if (i == 0) 10f else if (sangrada) 1f else 6f),
                                     negrita = !sangrada,
                                 )
                             )
                         }
                     }
-                    addView(linea(ctx.getString(R.string.cartel_abrir), 13f, Color.parseColor("#9E9E9E"), 28))
+                    addView(
+                        linea(ctx.getString(R.string.cartel_abrir), 12f,
+                            Color.parseColor("#8A8A8A"), dp(ctx, 13f))
+                    )
                 }
 
                 // Marco a pantalla completa: tocar FUERA de la tarjeta lo cierra
                 // sin abrir nada, que es lo que espera quien esta cobrando.
                 val marco = FrameLayout(ctx).apply {
-                    setPadding(52, 0, 52, 0)
                     addView(
                         tarjeta,
-                        FrameLayout.LayoutParams(-1, -2, Gravity.CENTER),
+                        FrameLayout.LayoutParams(anchoTarjeta(ctx), -2, Gravity.CENTER),
                     )
                     isClickable = true
                     setOnClickListener { quitarCartel(ctx) }
@@ -297,7 +363,15 @@ object Aviso {
         despertar(app)
         return encima(
             app, "Pedido 0082", "4 artículos · Recoge · Frank Test",
-            listOf("1  Papa rellena", "2  Tacos de pollo", "   + Gallo pinto, Arroz", "1  Carne Asada"),
+            // Con una nota de linea a proposito: es el renglon que salia
+            // como «null» antes de leer el JSON con Json.texto.
+            listOf(
+                "1  Papa rellena",
+                "2  Tacos de pollo",
+                "   + Gallo pinto, Arroz",
+                "   “sin cebolla”",
+                "1  Carne asada",
+            ),
         )
     }
 }

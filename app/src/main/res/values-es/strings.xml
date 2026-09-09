@@ -11,6 +11,7 @@
 
     <string name="cartel_encabezado">PEDIDO EN LÍNEA</string>
     <string name="cartel_abrir">Toca aquí para abrir la cocina</string>
+    <string name="cartel_mas">y %1$d más</string>
     <string name="aviso_falta_encima">Activa «Mostrar sobre otras apps» para el aviso</string>
 
     <string name="aj_enlace">Enlace de cocina (panel &gt; Cocina &gt; Copiar)</string>
