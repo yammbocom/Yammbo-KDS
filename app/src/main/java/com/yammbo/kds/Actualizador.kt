@@ -56,27 +56,27 @@ object Actualizador {
     private fun sonda(): Version? = runCatching {
         val j = JSONObject(leer(SONDA, "application/json") ?: return null)
         val code = j.optInt("versionCode", 0)
-        val name = j.optString("versionName").trim()
-        val url = j.optString("url").trim()
+        val name = j.texto("versionName")
+        val url = j.texto("url")
         if (code > 0 && name.isNotBlank() && url.startsWith("https://"))
-            Version(code, name, url, j.optString("notas").trim()) else null
+            Version(code, name, url, j.texto("notas")) else null
     }.getOrNull()
 
     /** Respaldo. El codigo sale del ultimo tramo del tag: "v1.5" -> 5. */
     private fun github(): Version? = runCatching {
         val j = JSONObject(leer(GITHUB, "application/vnd.github+json") ?: return null)
-        val name = j.optString("tag_name").removePrefix("v").trim()
+        val name = j.texto("tag_name").removePrefix("v").trim()
         val code = name.substringAfterLast('.').toIntOrNull() ?: 0
         var url = ""
         val assets = j.optJSONArray("assets")
         for (i in 0 until (assets?.length() ?: 0)) {
             val a = assets!!.optJSONObject(i) ?: continue
-            if (a.optString("name").endsWith(".apk")) {
-                url = a.optString("browser_download_url"); break
+            if (a.texto("name").endsWith(".apk")) {
+                url = a.texto("browser_download_url"); break
             }
         }
         if (code > 0 && url.startsWith("https://"))
-            Version(code, name, url, j.optString("body").trim()) else null
+            Version(code, name, url, j.texto("body")) else null
     }.getOrNull()
 
     fun hayNueva(ctx: Context, v: Version): Boolean = v.code > instalada(ctx)

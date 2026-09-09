@@ -39,14 +39,14 @@ data class Ticket(
                 val ex = l.optJSONArray("extras")
                 val extras = ArrayList<String>(ex?.length() ?: 0)
                 for (j in 0 until (ex?.length() ?: 0)) {
-                    ex!!.optString(j).takeIf { it.isNotBlank() }?.let(extras::add)
+                    ex!!.texto(j).takeIf { it.isNotBlank() }?.let(extras::add)
                 }
                 ls.add(
                     Linea(
                         n = l.optInt("n", 1),
-                        nombre = l.optString("nombre", ""),
+                        nombre = l.texto("nombre"),
                         extras = extras,
-                        nota = l.optString("nota").ifBlank { null },
+                        nota = l.texto("nota").ifBlank { null },
                     )
                 )
             }
@@ -54,13 +54,13 @@ data class Ticket(
             // un trozo de papel en blanco saliendo de la termica.
             if (ls.isEmpty()) throw IllegalArgumentException("Comanda sin líneas")
             return Ticket(
-                local = o.optString("local", ""),
-                comanda = o.optString("comanda", ""),
-                origen = o.optString("origen", "web"),
-                hora = o.optString("hora").ifBlank { null },
-                entrega = o.optString("entrega").ifBlank { null },
-                cliente = o.optString("cliente").ifBlank { null },
-                nota = o.optString("nota").ifBlank { null },
+                local = o.texto("local"),
+                comanda = o.texto("comanda"),
+                origen = o.texto("origen").ifBlank { "web" },
+                hora = o.texto("hora").ifBlank { null },
+                entrega = o.texto("entrega").ifBlank { null },
+                cliente = o.texto("cliente").ifBlank { null },
+                nota = o.texto("nota").ifBlank { null },
                 lineas = ls,
             )
         }

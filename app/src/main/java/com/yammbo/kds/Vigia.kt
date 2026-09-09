@@ -51,12 +51,12 @@ object Vigia {
             val vivos = HashSet<String>()
             for (i in 0 until arr.length()) {
                 val o = arr.optJSONObject(i) ?: continue
-                val id = o.optString("id")
+                val id = o.texto("id")
                 if (id.isBlank()) continue
                 vivos.add(id)
                 // Solo las que estan SIN EMPEZAR: una que ya se cocina no es
                 // noticia, y al moverla no debe volver a sonar.
-                if (o.optString("status") != "pushed") continue
+                if (o.texto("status") != "pushed") continue
                 if (vistos.add(id)) nuevas.add(o)
             }
             // Purga con tolerancia: un id no se olvida hasta faltar 3 vueltas
@@ -81,13 +81,13 @@ object Vigia {
         // acaba de teclear el propio cajero: sonarle y notificarle lo que acaba
         // de cobrar es ruido, y el ruido inutil enseña a ignorar los avisos de
         // verdad. Las del TPV se siguen viendo en la pantalla del KDS.
-        val online = nuevas.filter { it.optString("origen") == "web" }
+        val online = nuevas.filter { it.texto("origen") == "web" }
         if (online.isEmpty()) return
 
         val app = ctx.applicationContext
         val prefs = Prefs(app)
         val o = online.first()
-        val titulo = if (online.size == 1) "Pedido " + o.optString("clave")
+        val titulo = if (online.size == 1) "Pedido " + o.texto("clave")
         else online.size.toString() + " pedidos en línea"
         val cuerpo = resumen(o)
 
@@ -118,19 +118,19 @@ object Vigia {
         for (i in 0 until ls.length()) {
             if (puestas >= max) break
             val l = ls.optJSONObject(i) ?: continue
-            out.add(l.optInt("n", 1).toString() + "  " + l.optString("nombre"))
+            out.add(l.optInt("n", 1).toString() + "  " + l.texto("nombre"))
             puestas++
             val ex = l.optJSONArray("extras")
             if (ex != null && ex.length() > 0) {
                 val e = ArrayList<String>()
                 for (j in 0 until ex.length()) {
-                    ex.optString(j).takeIf { it.isNotBlank() }?.let(e::add)
+                    ex.texto(j).takeIf { it.isNotBlank() }?.let(e::add)
                 }
                 // La sangria inicial es la señal de "esto va debajo del plato":
                 // el cartel la usa para pintarlo mas pequeño y en gris.
                 if (e.isNotEmpty()) out.add("   + " + e.joinToString(", "))
             }
-            l.optString("nota").takeIf { it.isNotBlank() }?.let {
+            l.texto("nota").takeIf { it.isNotBlank() }?.let {
                 out.add("   " + "\"" + it + "\"")
             }
         }
@@ -145,11 +145,11 @@ object Vigia {
         for (i in 0 until (ls?.length() ?: 0)) n += (ls!!.optJSONObject(i)?.optInt("n", 1) ?: 1)
         val partes = ArrayList<String>()
         partes.add(n.toString() + if (n == 1) " artículo" else " artículos")
-        when (o.optString("fulfillment")) {
+        when (o.texto("fulfillment")) {
             "delivery" -> partes.add("Envío")
             "pickup" -> partes.add("Recoge")
         }
-        o.optString("customer_name").takeIf { it.isNotBlank() }?.let(partes::add)
+        o.texto("customer_name").takeIf { it.isNotBlank() }?.let(partes::add)
         return partes.joinToString(" · ")
     }
 }
