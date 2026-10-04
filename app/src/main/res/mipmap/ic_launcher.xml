@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 7: sin iconos adaptativos (en 8+ manda mipmap-anydpi-v26). La baldosa negra entera con el glifo. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp" android:height="48dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#000000"
+        android:pathData="M24,6H84A18,18 0 0 1 102,24V84A18,18 0 0 1 84,102H24A18,18 0 0 1 6,84V24A18,18 0 0 1 24,6Z" />
+    <path android:fillColor="#FFFFFF" android:fillType="evenOdd"
+        android:pathData="M31.5,29H76.5A9.5,9.5 0 0 1 86,38.5V64.5A9.5,9.5 0 0 1 76.5,74H31.5A9.5,9.5 0 0 1 22,64.5V38.5A9.5,9.5 0 0 1 31.5,29ZM31.5,34H76.5A4.5,4.5 0 0 1 81,38.5V64.5A4.5,4.5 0 0 1 76.5,69H31.5A4.5,4.5 0 0 1 27,64.5V38.5A4.5,4.5 0 0 1 31.5,34Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M34.5,39H41.5A2.5,2.5 0 0 1 44,41.5V61.5A2.5,2.5 0 0 1 41.5,64H34.5A2.5,2.5 0 0 1 32,61.5V41.5A2.5,2.5 0 0 1 34.5,39Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M50.5,39H57.5A2.5,2.5 0 0 1 60,41.5V54.5A2.5,2.5 0 0 1 57.5,57H50.5A2.5,2.5 0 0 1 48,54.5V41.5A2.5,2.5 0 0 1 50.5,39Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M66.5,39H73.5A2.5,2.5 0 0 1 76,41.5V47.5A2.5,2.5 0 0 1 73.5,50H66.5A2.5,2.5 0 0 1 64,47.5V41.5A2.5,2.5 0 0 1 66.5,39Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M48,74H60V79H48Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M40.5,79H67.5A2.5,2.5 0 0 1 67.5,84H40.5A2.5,2.5 0 0 1 40.5,79Z" />
+</vector>

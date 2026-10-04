@@ -7,7 +7,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.media.AudioAttributes
 import android.media.Ringtone
 import android.media.RingtoneManager
@@ -17,13 +16,11 @@ import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
 import android.text.TextUtils
-import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.core.app.NotificationCompat
 
 /**
@@ -41,7 +38,8 @@ object Aviso {
     // tenian la version anterior hay que estrenar id.
     const val CANAL_PEDIDOS = "pedidos_v2"
     const val CANAL_SERVICIO = "servicio"
-    private const val ID_PEDIDO = 1001
+    /** La notificacion de pedido: una sola, la ultima pisa a la anterior. */
+    const val ID_PEDIDO = 1001
 
     /** Alarma y no notificacion: es lo que suena aunque el aparato este en
      *  silencio, que es como acaba siempre una tablet de mostrador. */
@@ -83,12 +81,15 @@ object Aviso {
 
     fun notificacionServicio(ctx: Context): Notification =
         NotificationCompat.Builder(ctx, CANAL_SERVICIO)
-            .setContentTitle("Yammbo KDS")
+            .setContentTitle(ctx.getString(R.string.app_name))
             .setContentText(ctx.getString(R.string.canal_servicio_desc))
             .setSmallIcon(R.drawable.ic_noti)
             .setOngoing(true)
+            .setShowWhen(false)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setContentIntent(abrirApp(ctx))
-            .addAction(0, "Ajustes", abrirAjustes(ctx))
+            .addAction(0, ctx.getString(R.string.ajustes), abrirAjustes(ctx))
             .build()
 
     private fun abrirApp(ctx: Context): PendingIntent {
@@ -110,7 +111,10 @@ object Aviso {
         val n = NotificationCompat.Builder(ctx, CANAL_PEDIDOS)
             .setContentTitle(titulo)
             .setContentText(cuerpo)
+            // Desplegada se lee entera: la comanda no cabe en una linea.
+            .setStyle(NotificationCompat.BigTextStyle().bigText(cuerpo))
             .setSmallIcon(R.drawable.ic_noti)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setAutoCancel(true)
@@ -167,11 +171,6 @@ object Aviso {
 
     private var cartel: View? = null
 
-    /** dp a px. Los tamaños en crudo salian minusculos en una tablet densa y
-     *  enormes en una barata: el cartel tiene que medir lo mismo en las dos. */
-    private fun dp(ctx: Context, v: Float): Int =
-        (v * ctx.resources.displayMetrics.density + 0.5f).toInt()
-
     /**
      * Ancho de la tarjeta. ACOTADO, nunca a pantalla completa.
      *
@@ -183,40 +182,39 @@ object Aviso {
      */
     private fun anchoTarjeta(ctx: Context): Int {
         val dm = ctx.resources.displayMetrics
-        return minOf(dp(ctx, 340f), dm.widthPixels - dp(ctx, 48f))
-            .coerceAtLeast(dp(ctx, 220f))
+        return minOf(Ui.dp(ctx, 400f), dm.widthPixels - Ui.dp(ctx, 48f))
+            .coerceAtLeast(Ui.dp(ctx, 260f))
     }
-
-    /**
-     * sp a px. El texto crece con el tamaño de letra del SISTEMA, que en una
-     * tablet de mostrador suele estar en grande: medir en dp los renglones que
-     * se pintan en sp da una cuenta corta y la tarjeta se sale.
-     */
-    private fun sp(ctx: Context, v: Float): Int = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_SP, v, ctx.resources.displayMetrics).toInt()
 
     /**
      * Cuantos renglones de platos caben sin que la tarjeta se salga.
      *
      * 🚨 Si se sale, el FrameLayout la recorta por ABAJO y lo que se pierde son
-     * los ultimos platos y el pie ("toca para abrir"), justo lo que no puede
-     * faltar. Por eso se descuenta primero todo lo fijo — encabezado, titulo,
-     * cuerpo de hasta dos lineas, separador, pie y paddings — y solo lo que
-     * sobra se reparte en renglones.
+     * los ultimos platos y los botones, justo lo que no puede faltar. Por eso
+     * se descuenta primero todo lo fijo — chip, titulo de hasta dos lineas,
+     * cuerpo de hasta dos, separador, botones y paddings — y solo lo que sobra
+     * se reparte en renglones. Lo que es texto se mide en sp (crece con la
+     * letra del sistema) y lo demas en dp.
      *
      * Lo usa Vigia para recortar la comanda: el corte se hace una sola vez, en
      * el sitio donde todavia se sabe cuantos platos quedan fuera.
      */
     fun lineasQueCaben(ctx: Context): Int {
         val alto = ctx.resources.displayMetrics.heightPixels
-        val fijo = sp(ctx, 100f) + dp(ctx, 62f)
-        val renglon = sp(ctx, 16f) + dp(ctx, 6f)
+        // sp: chip 14 + titulo 2 x 33 + cuerpo 2 x 19. dp: paddings 44, chip 14,
+        // margenes 16, separador 17, primer renglon 4, botones 20 + 52.
+        val fijo = Ui.sp(ctx, 120f) + Ui.dp(ctx, 168f)
+        val renglon = Ui.sp(ctx, 21f) + Ui.dp(ctx, 8f)
         return ((alto * 0.88f - fijo) / renglon).toInt().coerceIn(2, 9)
     }
 
     /**
-     * El cartel encima de todo. Se quita solo a los 20 s o al tocarlo: dejarlo
-     * fijo taparia la caja justo cuando el cajero esta cobrando.
+     * El cartel encima de todo. Se quita solo a los 20 s, al tocar fuera o con
+     * "Cerrar": dejarlo fijo taparia la caja justo cuando el cajero esta
+     * cobrando. Tocar la tarjeta o "Abrir cocina" abre la cocina.
+     *
+     * Tarjeta INVERTIDA respecto al sistema (negra de dia, clara de noche): es
+     * lo que pide atencion, y en B/N la atencion se dice invirtiendo.
      *
      * Devuelve false si no hay permiso, para que quien llama pueda decirlo en
      * vez de callarse: un aviso que no aparece y no explica por que es el peor
@@ -233,70 +231,108 @@ object Aviso {
             runCatching {
                 quitarCartel(ctx)
                 val wm = ctx.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                val p = Ui.paleta(ctx).invertida()
+                fun dp(v: Float) = Ui.dp(ctx, v)
 
                 fun linea(
                     t: String,
                     sp: Float,
                     color: Int,
-                    arriba: Int,
-                    negrita: Boolean = false,
+                    medio: Boolean = false,
                     lineas: Int = 1,
-                ) = TextView(ctx).apply {
-                    text = t
-                    setTextColor(color)
-                    setTextSize(TypedValue.COMPLEX_UNIT_SP, sp)
-                    setPadding(0, arriba, 0, 0)
-                    // Con la tarjeta estrecha, un plato de nombre largo la
+                ) = Ui.texto(ctx, t, sp, medio, color).apply {
+                    // Con la tarjeta acotada, un plato de nombre largo la
                     // estiraria hacia abajo hasta comerse la pantalla.
                     maxLines = lineas
                     ellipsize = TextUtils.TruncateAt.END
-                    if (negrita) typeface = android.graphics.Typeface.DEFAULT_BOLD
+                }
+
+                fun abrirCocina() {
+                    quitarCartel(ctx)
+                    ctx.startActivity(
+                        Intent(ctx, MainActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    )
                 }
 
                 // Tarjeta centrada, no pegada arriba: ahi chocaba con la propia
                 // notificacion emergente y el cartel quedaba medio tapado.
                 val tarjeta = LinearLayout(ctx).apply {
                     orientation = LinearLayout.VERTICAL
-                    background = GradientDrawable().apply {
-                        setColor(Color.BLACK)
-                        setStroke(dp(ctx, 2f), Color.WHITE)
-                        cornerRadius = dp(ctx, 18f).toFloat()
-                    }
-                    setPadding(dp(ctx, 20f), dp(ctx, 15f), dp(ctx, 20f), dp(ctx, 13f))
+                    background = Ui.forma(p.fondo, dp(20f).toFloat())
+                    elevation = dp(16f).toFloat()
+                    setPadding(dp(24f), dp(24f), dp(24f), dp(20f))
                     addView(
-                        linea(ctx.getString(R.string.cartel_encabezado), 11f,
-                            Color.parseColor("#9E9E9E"), 0).apply { letterSpacing = 0.16f }
+                        Ui.chip(ctx, p, ctx.getString(R.string.cartel_encabezado), lleno = true)
+                            .apply { letterSpacing = 0.08f },
+                        LinearLayout.LayoutParams(-2, -2),
                     )
                     addView(
-                        linea(titulo, 23f, Color.WHITE, dp(ctx, 2f), negrita = true, lineas = 2)
+                        linea(titulo, 28f, p.texto, medio = true, lineas = 2),
+                        LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12f) },
                     )
                     addView(
-                        linea(cuerpo, 14f, Color.parseColor("#C7C7C7"), dp(ctx, 2f), lineas = 2)
+                        linea(cuerpo, 16f, p.secundario, lineas = 2),
+                        LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(4f) },
                     )
                     // Lo que se va a cocinar. El cajero decide con esto si le
                     // corre prisa, sin tener que abrir la cocina.
                     if (detalle.isNotEmpty()) {
                         addView(View(ctx).apply {
-                            setBackgroundColor(Color.parseColor("#3A3A3A"))
-                            layoutParams = LinearLayout.LayoutParams(-1, dp(ctx, 1f))
-                                .apply { topMargin = dp(ctx, 11f) }
+                            setBackgroundColor(p.linea)
+                            layoutParams = LinearLayout.LayoutParams(-1, maxOf(1, dp(1f)))
+                                .apply { topMargin = dp(16f) }
                         })
                         detalle.forEachIndexed { i, d ->
+                            // La sangria inicial es la señal de "esto va debajo
+                            // del plato": extras, nota y "y N mas".
                             val sangrada = d.startsWith(" ")
-                            addView(
-                                linea(
-                                    d.trim(),
-                                    if (sangrada) 13f else 16f,
-                                    if (sangrada) Color.parseColor("#9E9E9E") else Color.WHITE,
-                                    dp(ctx, if (i == 0) 10f else if (sangrada) 1f else 6f),
-                                    negrita = !sangrada,
+                            val arriba = dp(if (i == 0) 12f else if (sangrada) 2f else 8f)
+                            if (sangrada) {
+                                addView(
+                                    linea(d.trim(), 14f, p.secundario),
+                                    LinearLayout.LayoutParams(-1, -2).apply {
+                                        topMargin = arriba
+                                        marginStart = dp(36f)
+                                    },
                                 )
-                            )
+                            } else {
+                                // "2  Tacos de pollo": la cantidad en su columna.
+                                val corte = d.indexOf("  ")
+                                val cant = if (corte in 1..4) d.substring(0, corte) else ""
+                                val nombre = if (cant.isNotEmpty()) d.substring(corte).trim() else d
+                                addView(
+                                    LinearLayout(ctx).apply {
+                                        orientation = LinearLayout.HORIZONTAL
+                                        addView(
+                                            linea(cant, 18f, p.texto, medio = true),
+                                            LinearLayout.LayoutParams(dp(36f), -2),
+                                        )
+                                        addView(
+                                            linea(nombre, 18f, p.texto, medio = true),
+                                            LinearLayout.LayoutParams(0, -2, 1f),
+                                        )
+                                    },
+                                    LinearLayout.LayoutParams(-1, -2).apply { topMargin = arriba },
+                                )
+                            }
                         }
                     }
                     addView(
-                        linea(ctx.getString(R.string.cartel_abrir), 12f,
-                            Color.parseColor("#8A8A8A"), dp(ctx, 13f))
+                        LinearLayout(ctx).apply {
+                            orientation = LinearLayout.HORIZONTAL
+                            addView(
+                                Ui.boton(ctx, p, ctx.getString(R.string.cartel_cerrar), Ui.Tipo.SECUNDARIO) {
+                                    quitarCartel(ctx)
+                                },
+                                LinearLayout.LayoutParams(0, -2, 1f),
+                            )
+                            addView(
+                                Ui.boton(ctx, p, ctx.getString(R.string.cartel_abrir)) { abrirCocina() },
+                                LinearLayout.LayoutParams(0, -2, 1f).apply { marginStart = dp(12f) },
+                            )
+                        },
+                        LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(20f) },
                     )
                 }
 
@@ -310,13 +346,7 @@ object Aviso {
                     isClickable = true
                     setOnClickListener { quitarCartel(ctx) }
                 }
-                tarjeta.setOnClickListener {
-                    quitarCartel(ctx)
-                    ctx.startActivity(
-                        Intent(ctx, MainActivity::class.java)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    )
-                }
+                tarjeta.setOnClickListener { abrirCocina() }
 
                 val tipo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                     WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- local.properties lo escribe Android Studio en cada maquina y no va al
+         repo: su formato no es asunto de este proyecto. -->
+    <issue id="PropertyEscape">
+        <ignore path="**/local.properties" />
+    </issue>
+</lint>

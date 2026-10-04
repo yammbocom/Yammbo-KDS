@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copia de la paleta OSCURA de Ui.kt, SOLO para el tema (fondo de la
+     ventana antes del primer frame, dialogos). El codigo usa Ui.kt. -->
+<resources>
+    <color name="yk_fondo">#0B0B0B</color>
+    <color name="yk_texto">#F2F2F2</color>
+    <color name="yk_secundario">#A3A3A3</color>
+    <color name="yk_pulsado">#33FFFFFF</color>
+    <bool name="yk_barras_claras">false</bool>
+</resources>

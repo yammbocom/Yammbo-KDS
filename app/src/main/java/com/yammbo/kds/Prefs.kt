@@ -47,9 +47,8 @@ class Prefs(ctx: Context) {
         get() = p.getBoolean("encima", true)
         set(v) = p.edit().putBoolean("encima", v).apply()
 
-    // https y no http: el manifest lleva usesCleartextTraffic=false, asi que
-    // una URL en claro fallaria siempre sin decir por que.
-    val configurada: Boolean get() = url.startsWith("https://") && url.contains("/kds/")
+    /** La regla vive en [Enlace.valido], la misma que usa la bienvenida. */
+    val configurada: Boolean get() = Enlace.valido(url)
 
-    fun urlDatos(): String = url.trimEnd('/') + "/data"
+    fun urlDatos(): String = Enlace.datos(url)
 }

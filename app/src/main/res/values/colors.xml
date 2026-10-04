@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copia de la paleta CLARA de Ui.kt, SOLO para el tema (fondo de la
+     ventana antes del primer frame, dialogos). El codigo usa Ui.kt. -->
+<resources>
+    <color name="yk_fondo">#FFFFFF</color>
+    <color name="yk_texto">#0B0B0B</color>
+    <color name="yk_secundario">#5F5F5F</color>
+    <color name="yk_pulsado">#1F000000</color>
+    <bool name="yk_barras_claras">true</bool>
+</resources>
