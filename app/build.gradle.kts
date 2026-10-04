@@ -51,6 +51,22 @@ android {
         versionName = "1.7"
     }
 
+    flavorDimensions += "dist"
+    productFlavors {
+        // Google Play: sin autoactualizador ni intent de pantalla completa.
+        create("play") {
+            dimension = "dist"
+            buildConfigField("boolean", "SELF_UPDATE", "false")
+            buildConfigField("boolean", "FULL_SCREEN_ALERT", "false")
+        }
+        // Instalacion directa (sideload): el comportamiento de siempre.
+        create("direct") {
+            dimension = "dist"
+            buildConfigField("boolean", "SELF_UPDATE", "true")
+            buildConfigField("boolean", "FULL_SCREEN_ALERT", "true")
+        }
+    }
+
     if (hayFirma) {
         signingConfigs {
             create("yammbo") {
@@ -79,7 +95,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    buildFeatures { viewBinding = false }
+    buildFeatures {
+        viewBinding = false
+        buildConfig = true
+    }
     testOptions { unitTests.all { it.testLogging { showStandardStreams = true } } }
 }
 

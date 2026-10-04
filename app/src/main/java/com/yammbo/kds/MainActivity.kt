@@ -132,7 +132,7 @@ class MainActivity : AppCompatActivity() {
         pedirPermisos()
         ServicioKds.arrancar(this)
         cargar()
-        mirarActualizacion()
+        if (BuildConfig.SELF_UPDATE) mirarActualizacion()
     }
 
     /**
@@ -238,7 +238,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (intent?.getBooleanExtra("buscar_actualizacion", false) == true) {
+        if (BuildConfig.SELF_UPDATE && intent?.getBooleanExtra("buscar_actualizacion", false) == true) {
             intent.removeExtra("buscar_actualizacion")
             mirarActualizacion(forzar = true)
         }

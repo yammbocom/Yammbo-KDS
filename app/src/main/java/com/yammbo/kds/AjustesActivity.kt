@@ -315,7 +315,7 @@ class AjustesActivity : AppCompatActivity() {
             addView(bPermiso)
             addView(bProbarAviso)
             addView(bProbar)
-            addView(bActualizar)
+            if (BuildConfig.SELF_UPDATE) addView(bActualizar)
             addView(bGuardar)
             addView(TextView(this@AjustesActivity).apply {
                 text = "Versión instalada " + Actualizador.nombreInstalado(this@AjustesActivity)

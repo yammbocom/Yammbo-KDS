@@ -117,7 +117,7 @@ object Aviso {
             .setDefaults(NotificationCompat.DEFAULT_VIBRATE)
             .setSound(uriAlarma(), android.media.AudioManager.STREAM_ALARM)  // pre-Oreo
             .setContentIntent(abrirApp(ctx))
-            .setFullScreenIntent(abrirApp(ctx), true)
+            .apply { if (BuildConfig.FULL_SCREEN_ALERT) setFullScreenIntent(abrirApp(ctx), true) }
             .build()
         runCatching { ctx.getSystemService(NotificationManager::class.java).notify(ID_PEDIDO, n) }
     }
